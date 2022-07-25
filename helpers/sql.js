@@ -1,7 +1,15 @@
 const { BadRequestError } = require("../expressError");
 
-// THIS NEEDS SOME GREAT DOCUMENTATION.
-
+/**  Translates object data to update into SQL format
+ *  Parameters:
+ *    dataToUpdate: JS object with key-value pairs that will be updated
+ *    jsToSql: JS object with JS name as key and column name as value
+ * 
+ *  Returns:
+ *    setCols: string of column nmaes eqla to SQL parameter
+ *    values: lists of values to update for the columnes given in setCols
+ * 
+*/
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
