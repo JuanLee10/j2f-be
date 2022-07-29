@@ -2,7 +2,7 @@ const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 
-const Job = require("./job");
+const Job = require("./jobs");
 
 /** Related functions for companies. */
 
