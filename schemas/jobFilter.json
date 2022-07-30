@@ -10,12 +10,11 @@
     },
     "minSalary": {
       "type": "integer",
-      "minimum": 0,
-      
+      "minimum": 0
     },
     "hasEquity": {
       "type": "boolean"
-    },
+    }
   },
   "additionalProperties": false,
   "required": []
