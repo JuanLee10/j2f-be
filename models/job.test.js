@@ -47,7 +47,7 @@ describe("findAll", function () {
             title: "Job1",
             salary: 100,
             equity: "0.1",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
         {
@@ -55,7 +55,7 @@ describe("findAll", function () {
             title: "Job2",
             salary: 200,
             equity: "0.2",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
         {
@@ -63,7 +63,7 @@ describe("findAll", function () {
             title: "Job3",
             salary: 300,
             equity: "0",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
         {
@@ -71,7 +71,7 @@ describe("findAll", function () {
             title: "Job4",
             salary: null,
             equity: null,
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
     ]);
@@ -88,9 +88,9 @@ describe("findAll", function () {
             title: "Job3",
             salary: 300,
             equity: "0",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
-        },
+        }
     ]);
   });
 
@@ -105,7 +105,7 @@ describe("findAll", function () {
             title: "Job1",
             salary: 100,
             equity: "0.1",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
         {
@@ -113,7 +113,7 @@ describe("findAll", function () {
             title: "Job2",
             salary: 200,
             equity: "0.2",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
     ]);
@@ -131,7 +131,7 @@ describe("findAll", function () {
             title: "Job2",
             salary: 200,
             equity: "0.2",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
     ]);
@@ -148,7 +148,7 @@ describe("findAll", function () {
             title: "Job2",
             salary: 200,
             equity: "0.2",
-            comapnyHandle: "c1",
+            companyHandle: "c1",
             companyName: "C1",
         },
     ]);
