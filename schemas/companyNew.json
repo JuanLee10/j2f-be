@@ -26,9 +26,5 @@
     }
   },
   "additionalProperties": false,
-  "required": [
-    "name",
-    "handle",
-    "description"
-  ]
+  "required": ["name", "handle", "description"]
 }

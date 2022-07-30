@@ -31,11 +31,5 @@
     }
   },
   "additionalProperties": false,
-  "required": [
-    "username",
-    "firstName",
-    "lastName",
-    "password",
-    "email"
-  ]
+  "required": ["username", "firstName", "lastName", "password", "email"]
 }

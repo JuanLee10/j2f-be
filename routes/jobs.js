@@ -15,7 +15,6 @@ const jobFilterSchema = require("../schemas/jobFilter.json");
 
 const router = new express.Router();
 
-
 /** POST / { job } =>  { job }
  *
  * job should be { title, salary, equity, companyHandle }
@@ -28,7 +27,7 @@ const router = new express.Router();
 router.post("/", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(req.body, jobNewSchema);
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
@@ -49,7 +48,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 router.get("/", async function (req, res, next) {
   const validator = jsonschema.validate(req.query, jobFilterSchema);
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
@@ -79,11 +78,10 @@ router.get("/:id", async function (req, res, next) {
  * Authorization required: admin
  */
 
-
 router.patch("/:id", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(req.body, jobUpdateSchema);
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
@@ -100,6 +98,5 @@ router.delete("/:id", ensureAdmin, async function (req, res, next) {
   await Job.remove(req.params.id);
   return res.json({ deleted: +req.params.id });
 });
-
 
 module.exports = router;
