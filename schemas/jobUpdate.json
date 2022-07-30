@@ -10,7 +10,7 @@
     },
     "salary": {
       "type": "integer",
-      "minimum": 0,
+      "minimum": 0
       
     },
     "equity": {
