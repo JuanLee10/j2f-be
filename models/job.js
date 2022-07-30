@@ -18,7 +18,7 @@ class Job {
             `INSERT INTO jobs 
                 (title, salary, equity, company_handle)
                 VALUES ($1, $2, $3, $4)
-                RETURNING id, title, salary, equity, comany_handle AS "companyHandle"`,
+                RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
             [
                 data.title,
                 data.salary,
@@ -26,7 +26,7 @@ class Job {
                 data.companyHandle,
             ]
         )
-        let job = result.row[0];
+        let job = result.rows[0];
         return job;
     }
     /** Find all jobs (optional filter on searchFilters).
@@ -39,19 +39,17 @@ class Job {
      * Returns [{ id, title, salary, equity, companyHandle, companyName }, ...]
      * */
 
-    static async findAll(data = {}) {
-        const { whereCols, values } = Job._sqlForPartialFilter(data);
+    static async findAll(filters = {}) {
+        const { whereClauses, values } = Job._sqlForPartialFilter(filters);
         const jobRes = await db.query(
-            `SELECT j.id,
-                    j.title,
-                    j.salary,
-                    j.equity,
-                    j.company_handle AS "companyHandle",
-                    c.name AS "companyName"
-            FROM jobs j 
-            LEFT JOIN companies AS c ON c.handle = j.company_handle
-            ${whereCols}
-            ORDER BY title`,
+            `SELECT id,
+                    title, 
+                    salary, 
+                    equity, 
+                    company_handle AS "companyHandle"
+                FROM jobs
+                ${whereClauses}
+                ORDER BY title`,
             values
         );
         return jobRes.rows;
@@ -111,7 +109,7 @@ class Job {
         const idVarIdx = `$${values.length + 1}`;
 
         const querySql = `UPDATE jobs
-                          SET ${setcols}
+                          SET ${setCols}
                           WHERE id = ${idVarIdx}
                           RETURNING id,
                                     title,
@@ -119,7 +117,7 @@ class Job {
                                     equity,
                                     company_handle AS "companyHandle"`;
         const result  = await db.query(querySql, [...values, id]);
-        const job = result.row[0];
+        const job = result.rows[0];
         
         if (!job) throw new NotFoundError(`No job: ${id}`);
 
@@ -138,7 +136,7 @@ class Job {
                 RETURNING id`,
             [id]
         );
-        const job = result.row[0];
+        const job = result.rows[0];
         
         if (!job) throw new NotFoundError(`No job: ${id}`);
     }
