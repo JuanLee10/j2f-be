@@ -1,5 +1,3 @@
-"use strict";
-
 const db = require("../db.js");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const Company = require("./company.js");
@@ -15,9 +13,9 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
-/************************************** create */
+/** ************************************ create */
 
-describe("create", function () {
+describe("create", () => {
   const newCompany = {
     handle: "new",
     name: "New",
@@ -26,14 +24,15 @@ describe("create", function () {
     logoUrl: "http://new.img",
   };
 
-  test("works", async function () {
-    let company = await Company.create(newCompany);
+  test("works", async () => {
+    const company = await Company.create(newCompany);
     expect(company).toEqual(newCompany);
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
-           WHERE handle = 'new'`);
+           WHERE handle = 'new'`
+    );
     expect(result.rows).toEqual([
       {
         handle: "new",
@@ -45,7 +44,7 @@ describe("create", function () {
     ]);
   });
 
-  test("bad request with dupe", async function () {
+  test("bad request with dupe", async () => {
     try {
       await Company.create(newCompany);
       await Company.create(newCompany);
@@ -56,11 +55,11 @@ describe("create", function () {
   });
 });
 
-/************************************** findAll */
+/** ************************************ findAll */
 
-describe("findAll", function () {
-  test("works: no filter", async function () {
-    let companies = await Company.findAll();
+describe("findAll", () => {
+  test("works: no filter", async () => {
+    const companies = await Company.findAll();
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -85,6 +84,7 @@ describe("findAll", function () {
       },
     ]);
   });
+
   test("works: filter", async () => {
     const filter = {
       name: "c1",
@@ -160,21 +160,29 @@ describe("findAll", function () {
   });
 });
 
-/************************************** get */
+/** ************************************ get */
 
-describe("get", function () {
-  test("works", async function () {
-    let company = await Company.get("c1");
+describe("get", () => {
+  test("works", async () => {
+    const company = await Company.get("c1");
     expect(company).toEqual({
       handle: "c1",
       name: "C1",
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",
+      jobs: [
+        {
+          id: expect.any(Number),
+          title: "j1",
+          salary: 100,
+          equity: "0.1",
+        },
+      ],
     });
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such company", async () => {
     try {
       await Company.get("nope");
       fail();
@@ -184,9 +192,9 @@ describe("get", function () {
   });
 });
 
-/************************************** update */
+/** ************************************ update */
 
-describe("update", function () {
+describe("update", () => {
   const updateData = {
     name: "New",
     description: "New Description",
@@ -194,27 +202,30 @@ describe("update", function () {
     logoUrl: "http://new.img",
   };
 
-  test("works", async function () {
-    let company = await Company.update("c1", updateData);
+  test("works", async () => {
+    const company = await Company.update("c1", updateData);
     expect(company).toEqual({
       handle: "c1",
       ...updateData,
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
-           WHERE handle = 'c1'`);
-    expect(result.rows).toEqual([{
-      handle: "c1",
-      name: "New",
-      description: "New Description",
-      num_employees: 10,
-      logo_url: "http://new.img",
-    }]);
+           WHERE handle = 'c1'`
+    );
+    expect(result.rows).toEqual([
+      {
+        handle: "c1",
+        name: "New",
+        description: "New Description",
+        num_employees: 10,
+        logo_url: "http://new.img",
+      },
+    ]);
   });
 
-  test("works: null fields", async function () {
+  test("works: null fields", async () => {
     const updateDataSetNulls = {
       name: "New",
       description: "New Description",
@@ -222,26 +233,29 @@ describe("update", function () {
       logoUrl: null,
     };
 
-    let company = await Company.update("c1", updateDataSetNulls);
+    const company = await Company.update("c1", updateDataSetNulls);
     expect(company).toEqual({
       handle: "c1",
       ...updateDataSetNulls,
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
-           WHERE handle = 'c1'`);
-    expect(result.rows).toEqual([{
-      handle: "c1",
-      name: "New",
-      description: "New Description",
-      num_employees: null,
-      logo_url: null,
-    }]);
+           WHERE handle = 'c1'`
+    );
+    expect(result.rows).toEqual([
+      {
+        handle: "c1",
+        name: "New",
+        description: "New Description",
+        num_employees: null,
+        logo_url: null,
+      },
+    ]);
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such company", async () => {
     try {
       await Company.update("nope", updateData);
       fail();
@@ -250,7 +264,7 @@ describe("update", function () {
     }
   });
 
-  test("bad request with no data", async function () {
+  test("bad request with no data", async () => {
     try {
       await Company.update("c1", {});
       fail();
@@ -260,22 +274,70 @@ describe("update", function () {
   });
 });
 
-/************************************** remove */
+/** ************************************ remove */
 
-describe("remove", function () {
-  test("works", async function () {
+describe("remove", () => {
+  test("works", async () => {
     await Company.remove("c1");
     const res = await db.query(
-        "SELECT handle FROM companies WHERE handle='c1'");
+      "SELECT handle FROM companies WHERE handle='c1'"
+    );
     expect(res.rows.length).toEqual(0);
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such company", async () => {
     try {
       await Company.remove("nope");
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
+/** ************************************ _sqlForPartialFilter */
+
+describe("sqlForPartialFilter", () => {
+  test("works with valid data", () => {
+    const filterBy = { minEmployees: 3, name: "searchBy" };
+
+    const { whereClauses, values } = Company._sqlForPartialFilter(filterBy);
+
+    expect(whereClauses).toEqual("WHERE num_employees >= $1 AND name ILIKE $2");
+    expect(values).toEqual([3, "%searchBy%"]);
+
+    const filterBy2 = { minEmployees: 1, maxEmployees: 5, name: "searchTerm" };
+
+    const result = Company._sqlForPartialFilter(filterBy2);
+    const whereClauses2 = result.whereClauses;
+    const values2 = result.values;
+
+    expect(whereClauses2).toEqual(
+      "WHERE num_employees >= $1 AND num_employees <= $2 AND name ILIKE $3"
+    );
+    expect(values2).toEqual([1, 5, "%searchTerm%"]);
+  });
+
+  test("works even if filterBy is an empty object", () => {
+    const filterBy = {};
+
+    const { whereClauses, values } = Company._sqlForPartialFilter(filterBy);
+
+    expect(whereClauses).toEqual("");
+    expect(values).toEqual([]);
+  });
+
+  test("fails: minEmployees must be smaller than maxEmployees", () => {
+    const filter = {
+      minEmployees: 2,
+      maxEmployees: 1,
+    };
+
+    try {
+      const { whereClauses, values } = Company._sqlForPartialFilter(filter);
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
     }
   });
 });
