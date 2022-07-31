@@ -17,12 +17,12 @@
       "minimum": 0,
       "maximum": 1
     },
-    "company_handle": {
+    "companyHandle": {
       "type": "string",
       "minLength": 1,
       "maxLength": 30
     }
   },
   "additionalProperties": false,
-  "required": ["title", "equity", "description", "company_handle"]
+  "required": ["title", "salary", "equity", "companyHandle"]
 }

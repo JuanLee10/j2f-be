@@ -45,21 +45,47 @@ class Job {
    * Returns [{ id, title, salary, equity, companyHandle }, ...]
    * */
 
-  static async findAll(filters = {}) {
-    const { whereClauses, values } = Job._sqlForPartialFilter(filters);
-    const jobRes = await db.query(
-      `SELECT id,
-              title, 
-              salary, 
-              equity, 
-              company_handle AS "companyHandle"
-           FROM jobs
-           ${whereClauses}
-           ORDER BY title`,
-      values
-    );
-    return jobRes.rows;
+   static async findAll({ minSalary, hasEquity, title } = {}) {
+    let query = `SELECT j.id,
+                        j.title,
+                        j.salary,
+                        j.equity,
+                        j.company_handle AS "companyHandle",
+                        c.name AS "companyName"
+                 FROM jobs j 
+                   LEFT JOIN companies AS c ON c.handle = j.company_handle`;
+    let whereExpressions = [];
+    let queryValues = [];
+
+    // For each possible search term, add to whereExpressions and
+    // queryValues so we can generate the right SQL
+
+    if (minSalary !== undefined) {
+      queryValues.push(minSalary);
+      whereExpressions.push(`salary >= $${queryValues.length}`);
+    }
+
+    if (hasEquity) {
+      whereExpressions.push(`equity > 0`);
+      whereExpressions.push(`equity IS NOT NULL`);
+    }
+
+    if (title !== undefined) {
+      queryValues.push(`%${title}%`);
+      whereExpressions.push(`title ILIKE $${queryValues.length}`);
+    }
+
+    if (whereExpressions.length > 0) {
+      query += " WHERE " + whereExpressions.join(" AND ");
+    }
+
+    // Finalize query and return results
+
+    query += " ORDER BY title";
+    const jobsRes = await db.query(query, queryValues);
+    return jobsRes.rows;
   }
+
 
   /** Given a job id, return data about the job.
    *
@@ -83,6 +109,20 @@ class Job {
     const job = jobRes.rows[0];
 
     if (!job) throw new NotFoundError(`No job: ${id}`);
+
+    const company = await db.query(
+      `SELECT name,
+                description,
+                handle,
+                num_employees AS "numEmployees",
+                logo_url AS "logoUrl"
+        FROM companies
+        WHERE handle = $1`,
+      [job.companyHandle]
+    );
+
+    job.company = company.rows[0];
+    delete job.companyHandle;
 
     return job;
   }
@@ -171,65 +211,8 @@ class Job {
 
     if (!job) throw new NotFoundError(`No job: ${id}`);
   }
-
-  /** Translate data to filter into SQL Format.
-   * Takes in:
-   *  filterBy: JS object with key-value pairs to filter in database
-   *
-   * Returns:
-   *  whereClauses: string that contains the where clause of the SQL query
-   *             if filterBy has title, minSalary, or hasEquity
-   *             - empty string if the keys above are not present
-   *  values: array of values to search by in the SQL query
-   *          - empty array if keys are not present
-   *
-   *  Example:
-   * {
-   *    whereCols: 'WHERE salary >= $1 AND equity > 0',
-   *    values: [200]
-   * }
-   *
-   */
-
-  static _sqlForPartialFilter(filters) {
-    if (Object.keys(filters).length === 0) {
-      return {
-        whereClauses: "",
-        values: [],
-      };
-    }
-
-    const whereClauses = [];
-    const values = [];
-    const { title, minSalary, hasEquity } = filters;
-
-    // check for the case where hasEquity is false and title & minSalary are undefined
-    if (!title && !minSalary && !hasEquity) {
-      return {
-        whereClauses: "",
-        values: [],
-      };
-    }
-
-    if (title !== undefined) {
-      whereClauses.push(`title ILIKE $${whereClauses.length + 1}`);
-      values.push(`%${title}%`);
-    }
-
-    if (minSalary !== undefined) {
-      whereClauses.push(`salary >= $${whereClauses.length + 1}`);
-      values.push(minSalary);
-    }
-
-    if (hasEquity === true) {
-      whereClauses.push(`equity > 0`);
-    }
-
-    return {
-      whereClauses: `WHERE ${whereClauses.join(" AND ")}`,
-      values,
-    };
-  }
 }
+
+  
 
 module.exports = Job;
