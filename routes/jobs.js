@@ -46,13 +46,19 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  const validator = jsonschema.validate(req.query, jobFilterSchema);
+  const queries = { ...req.query };
+  const { minSalary, hasEquity } = queries;
+  queries.minSalary = minSalary ? Number(minSalary) : minSalary;
+  queries.hasEquity = hasEquity ? true : false;
+
+  const validator = jsonschema.validate(queries, jobFilterSchema);
   if (!validator.valid) {
     const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
   const jobs = await Job.findAll(req.query);
+
   return res.json({ jobs });
 });
 
@@ -65,7 +71,7 @@ router.get("/", async function (req, res, next) {
  */
 
 router.get("/:id", async function (req, res, next) {
-  const job = await Company.get(req.params.id);
+  const job = await Job.get(req.params.id);
   return res.json({ job });
 });
 
