@@ -77,6 +77,8 @@ describe("findAll", () => {
         salary: 100,
         equity: "0.1",
         companyHandle: "c1",
+        "companyName": "C1",
+        
       },
       {
         id: expect.any(Number),
@@ -84,6 +86,7 @@ describe("findAll", () => {
         salary: 200,
         equity: "0.2",
         companyHandle: "c2",
+        "companyName": "C2",
       },
       {
         id: expect.any(Number),
@@ -91,6 +94,7 @@ describe("findAll", () => {
         salary: 300,
         equity: "0.3",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
   });
@@ -107,6 +111,7 @@ describe("findAll", () => {
         salary: 300,
         equity: "0.3",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
 
@@ -121,6 +126,7 @@ describe("findAll", () => {
         salary: 200,
         equity: "0.2",
         companyHandle: "c2",
+        "companyName": "C2",
       },
       {
         id: expect.any(Number),
@@ -128,6 +134,7 @@ describe("findAll", () => {
         salary: 300,
         equity: "0.3",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
 
@@ -142,6 +149,7 @@ describe("findAll", () => {
         salary: 100,
         equity: "0.1",
         companyHandle: "c1",
+        "companyName": "C1",
       },
       {
         id: expect.any(Number),
@@ -149,6 +157,7 @@ describe("findAll", () => {
         salary: 200,
         equity: "0.2",
         companyHandle: "c2",
+        "companyName": "C2",
       },
       {
         id: expect.any(Number),
@@ -156,6 +165,7 @@ describe("findAll", () => {
         salary: 300,
         equity: "0.3",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
 
@@ -172,6 +182,7 @@ describe("findAll", () => {
         salary: 200,
         equity: "0.2",
         companyHandle: "c2",
+        "companyName": "C2",
       },
       {
         id: expect.any(Number),
@@ -179,6 +190,7 @@ describe("findAll", () => {
         salary: 300,
         equity: "0.3",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
 
@@ -195,6 +207,7 @@ describe("findAll", () => {
         salary: 200,
         equity: "0.2",
         companyHandle: "c2",
+        "companyName": "C2",
       },
     ]);
   });
@@ -220,7 +233,13 @@ describe("get", () => {
       title: "new",
       salary: 500,
       equity: "0.5",
-      companyHandle: "c1",
+      company: {
+      description: "Desc1",
+      handle: "c1",
+      logoUrl: "http://c1.img",
+      name: "C1",
+      numEmployees: 1,
+    },
     });
   });
 
@@ -402,44 +421,5 @@ describe("remove", () => {
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
-  });
-});
-
-/** ************************************ _sqlForPartialFilter */
-
-describe("sqlForPartialFilter", () => {
-  test("works with valid data", () => {
-    const filterBy = { minSalary: 200, hasEquity: true };
-
-    const { whereClauses, values } = Job._sqlForPartialFilter(filterBy);
-
-    expect(whereClauses).toEqual("WHERE salary >= $1 AND equity > 0");
-    expect(values).toEqual([200]);
-
-    const filterBy2 = { hasEquity: false };
-
-    const result2 = Job._sqlForPartialFilter(filterBy2);
-    const whereClauses2 = result2.whereClauses;
-    const values2 = result2.values;
-
-    expect(whereClauses2).toEqual("");
-    expect(values2).toEqual([]);
-
-    const filterBy3 = { minSalary: 200, title: "3" };
-
-    const result3 = Job._sqlForPartialFilter(filterBy3);
-    const whereClauses3 = result3.whereClauses;
-    const values3 = result3.values;
-
-    expect(whereClauses3).toEqual("WHERE title ILIKE $1 AND salary >= $2");
-    expect(values3).toEqual(["%3%", 200]);
-  });
-
-  test("works even if filterBy is an empty object", () => {
-    const filterBy = {};
-    const { whereClauses, values } = Job._sqlForPartialFilter(filterBy);
-
-    expect(whereClauses).toEqual("");
-    expect(values).toEqual([]);
   });
 });

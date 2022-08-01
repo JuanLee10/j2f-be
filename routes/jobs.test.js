@@ -207,13 +207,13 @@ describe("PATCH /jobs/:id", function () {
     const resp = await request(app)
         .patch(`/jobs/${testJobIds[0]}`)
         .send({
-          title: "J-New",
+          title: "J1",
         })
         .set("authorization", `Bearer ${adminToken}`);
     expect(resp.body).toEqual({
       job: {
         id: expect.any(Number),
-        title: "J-New",
+        title: "J1",
         salary: 1,
         equity: "0.1",
         companyHandle: "c1",

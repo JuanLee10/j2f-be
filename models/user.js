@@ -233,6 +233,17 @@ class User {
 
     if (!user) throw new NotFoundError(`No username: ${username}`);
 
+    // check if a user already applied to this job
+    const appRes = await db.query(
+      `SELECT username, job_id AS "jobId"
+          FROM applications 
+          WHERE username=$1 AND job_id = $2`,
+      [username, jobId]);
+    const application = appRes.rows[0];
+    if (application) throw new BadRequestError(
+      `User: ${username} Already applied to job${jobId}`);
+
+      
     await db.query(
           `INSERT INTO applications (job_id, username)
            VALUES ($1, $2)`,
