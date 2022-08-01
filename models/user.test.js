@@ -289,6 +289,61 @@ describe("applyToJob", () => {
   });
 });
 
+/** ************************************ updateAppStatus */
+
+describe("updateAppStatus", () => {
+  test("works", async () => {
+    await User.updateAppStatus("u1", testJobIds[0], "accepted");
+    const res = await db.query(
+      `SELECT username, job_id AS "jobId", state
+          FROM applications 
+          WHERE username='u1' AND job_id = $1`,
+      [testJobIds[0]]
+    );
+    expect(res.rows[0]).toEqual({
+      username: "u1",
+      jobId: testJobIds[0],
+      state: "accepted",
+    });
+  });
+
+  // TODO: expect(err.msg).contains("Some error message")
+  test("not found if no such user", async () => {
+    try {
+      await User.updateAppStatus("nope", testJobIds[0], "accepted");
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("not found if no such job", async () => {
+    try {
+      await User.updateAppStatus("u1", 0, "accepted");
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("bad request if state is not ‘interested’, ‘applied’, ‘accepted’, ‘rejected’", async () => {
+    try {
+      await User.updateAppStatus("u1", testJobIds[0], "nope");
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
+  test("not found if application doesn't exist", async () => {
+    try {
+      await User.updateAppStatus("u2", testJobIds[0], "accepted");
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
 /** ************************************ _randomPassword */
 
 describe("_randomPassword", () => {

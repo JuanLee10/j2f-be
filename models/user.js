@@ -9,6 +9,7 @@ const {
   UnauthorizedError,
 } = require("../expressError");
 const generator = require("generate-password");
+const STATES = new Set(['interested', 'applied', 'accepted', 'rejected']);
 
 const { BCRYPT_WORK_FACTOR } = require("../config.js");
 
@@ -146,8 +147,7 @@ class User {
         WHERE a.username = $1`,
       [username]
     );
-    user.applications = applicationsRes.rows.map(a => a.job_id);
-    
+    user.applications = applicationsRes.rows.map((a) => a.job_id);
 
     return user;
   }
@@ -220,17 +220,21 @@ class User {
    **/
   static async applyToJob(username, jobId) {
     const preCheck = await db.query(
-          `SELECT id
+      `SELECT id
            FROM jobs
-           WHERE id = $1`, [jobId]);
+           WHERE id = $1`,
+      [jobId]
+    );
     const job = preCheck.rows[0];
 
     if (!job) throw new NotFoundError(`No job: ${jobId}`);
 
     const preCheck2 = await db.query(
-          `SELECT username
+      `SELECT username
            FROM users
-           WHERE username = $1`, [username]);
+           WHERE username = $1`,
+      [username]
+    );
     const user = preCheck2.rows[0];
 
     if (!user) throw new NotFoundError(`No username: ${username}`);
@@ -240,23 +244,82 @@ class User {
       `SELECT username, job_id AS "jobId"
           FROM applications 
           WHERE username=$1 AND job_id = $2`,
-      [username, jobId]);
+      [username, jobId]
+    );
     const application = appRes.rows[0];
-    if (application) throw new BadRequestError(
-      `User: ${username} Already applied to job${jobId}`);
+    if (application)
+      throw new BadRequestError(
+        `User: ${username} Already applied to job${jobId}`
+      );
 
     await db.query(
-          `INSERT INTO applications (job_id, username)
-           VALUES ($1, $2)`,
-        [jobId, username]);
-  } 
+      `INSERT INTO applications (job_id, username, state)
+           VALUES ($1, $2, 'applied')`,
+      [jobId, username]
+    );
+  }
+
+  /** Given a username and jobId and status, update status for
+   * job application.
+   *
+   * Throws NotFoundError if username, jobId, or app is not found.
+   * Throw bad request error if state is invalid
+   */
+
+  static async updateAppStatus(username, jobId, state) {
+    // check if job exists
+    const jobRes = await db.query(
+      `SELECT id
+         FROM jobs
+         WHERE id = $1`,
+      [jobId]
+    );
+    const job = jobRes.rows[0];
+    if (!job) throw new NotFoundError(`No job: ${jobId}`);
+
+    // check if user exists
+    const userRes = await db.query(
+      `SELECT username
+         FROM users
+         WHERE username = $1`,
+      [username]
+    );
+    const user = userRes.rows[0];
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    // check if application exists
+    const appRes = await db.query(
+      `SELECT username, job_id AS "jobId"
+        FROM applications 
+        WHERE username=$1 AND job_id = $2`,
+      [username, jobId]
+    );
+    const application = appRes.rows[0];
+    if (!application)
+      throw new NotFoundError(`
+    No application: ${username}, ${jobId}`);
+
+    // check if state is valid
+    if (STATES.has(state) === false)
+      throw new BadRequestError(`
+    Invalid state: ${state}`);
+
+    // update job application
+    await db.query(
+      `
+    UPDATE applications 
+    SET state=$1
+    WHERE username=$2 AND job_id=$3`,
+      [state, username, jobId]
+    );
+  }
 
   /** Generates a password of length made up of letters and numbers*/
-  static _randomPassword(length=10){
+  static _randomPassword(length = 10) {
     // Generate a random password
     return generator.generate({
       length,
-      numbers: true
+      numbers: true,
     });
   }
 }
