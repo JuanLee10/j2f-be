@@ -8,6 +8,7 @@ const {
   BadRequestError,
   UnauthorizedError,
 } = require("../expressError");
+const generator = require("generate-password");
 
 const { BCRYPT_WORK_FACTOR } = require("../config.js");
 
@@ -74,6 +75,7 @@ class User {
     if (duplicateCheck.rows[0]) {
       throw new BadRequestError(`Duplicate username: ${username}`);
     }
+    password = password || User._randomPassword(10);
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
@@ -243,12 +245,20 @@ class User {
     if (application) throw new BadRequestError(
       `User: ${username} Already applied to job${jobId}`);
 
-      
     await db.query(
           `INSERT INTO applications (job_id, username)
            VALUES ($1, $2)`,
         [jobId, username]);
   } 
+
+  /** Generates a password of length made up of letters and numbers*/
+  static _randomPassword(length=10){
+    // Generate a random password
+    return generator.generate({
+      length,
+      numbers: true
+    });
+  }
 }
 
 module.exports = User;

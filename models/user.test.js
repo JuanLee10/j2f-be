@@ -89,6 +89,19 @@ describe("register", function () {
     expect(found.rows[0].password.startsWith("$2b$")).toEqual(true);
   });
 
+  test("works: adds admin", async function () {
+    let user = await User.register({
+      ...newUser,
+      password: "password",
+      isAdmin: true,
+    });
+    expect(user).toEqual({ ...newUser, isAdmin: true });
+    const found = await db.query("SELECT * FROM users WHERE username = 'new'");
+    expect(found.rows.length).toEqual(1);
+    expect(found.rows[0].is_admin).toEqual(true);
+    expect(found.rows[0].password.startsWith("$2b$")).toEqual(true);
+  });
+
   test("bad request with dup data", async function () {
     try {
       await User.register({
@@ -273,5 +286,30 @@ describe("applyToJob", () => {
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
     }
+  });
+});
+
+/** ************************************ _randomPassword */
+
+describe("_randomPassword", () => {
+  test("works for different lengths", async () => {
+    const randomLength = Math.round(Math.random() * 10);
+    const password = User._randomPassword(randomLength);
+
+    expect(password.length).toEqual(randomLength);
+    expect(password).toEqual(expect.any(String));
+
+    const randomLength2 = Math.round(Math.random() * 10);
+    const password2 = User._randomPassword(randomLength2);
+
+    expect(password2.length).toEqual(randomLength2);
+    expect(password2).toEqual(expect.any(String));
+  });
+
+  test("works for default length", async () => {
+    const password = User._randomPassword();
+
+    expect(password.length).toEqual(10);
+    expect(password).toEqual(expect.any(String));
   });
 });
