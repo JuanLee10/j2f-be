@@ -52,8 +52,8 @@ class Job {
                         j.equity,
                         j.company_handle AS "companyHandle",
                         c.name AS "companyName"
-                 FROM jobs j 
-                   LEFT JOIN companies AS c ON c.handle = j.company_handle`;
+                 FROM jobs AS j 
+                 LEFT JOIN companies AS c ON c.handle = j.company_handle`;
     let whereExpressions = [];
     let queryValues = [];
 
@@ -122,7 +122,7 @@ class Job {
     );
 
     job.company = company.rows[0];
-    delete job.companyHandle;
+    delete job.companyHandle; 
 
     return job;
   }

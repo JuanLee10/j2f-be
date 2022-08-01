@@ -91,7 +91,7 @@ router.patch("/:id", ensureAdmin, async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const job = await Job.update(req.params.handle, req.body);
+  const job = await Job.update(req.params.id, req.body);
   return res.json({ job });
 });
 
