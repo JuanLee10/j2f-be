@@ -1,6 +1,6 @@
 # J2F Backend
 
-This is the Express backend for [J2F](http://l4j.demo.dkclee.com/).
+This is the Express backend for [J2F](https://yummy-ink.surge.sh).
 
 ## Motivation
 <!-- A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists. -->
