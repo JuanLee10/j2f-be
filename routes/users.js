@@ -147,4 +147,45 @@ router.post(
   }
 );
 
+/** GET /[username]/jobs => { jobs: [ { id, title, salary, equity, companyHandle, companyName, state }, ...] }
+ *
+ * Returns list of all jobs a user has applied to.
+ *
+ * Authorization required: admin or same-user-as-:username
+ **/
+
+router.get(
+  "/:username/jobs",
+  ensureCorrectUserOrAdmin,
+  async function (req, res, next) {
+    try {
+      const jobs = await User.getAppliedJobs(req.params.username);
+      return res.json({ jobs });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+/** DELETE /[username]/jobs/[id]  => { deleted: jobId }
+ *
+ * Returns { "deleted": jobId }
+ *
+ * Authorization required: admin or same-user-as-:username
+ * */
+
+router.delete(
+  "/:username/jobs/:id",
+  ensureCorrectUserOrAdmin,
+  async function (req, res, next) {
+    try {
+      const jobId = +req.params.id;
+      await User.unapplyFromJob(req.params.username, jobId);
+      return res.json({ deleted: jobId });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
 module.exports = router;

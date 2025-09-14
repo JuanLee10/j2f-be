@@ -322,6 +322,83 @@ class User {
       numbers: true,
     });
   }
+
+  /** Given a username, return all applied jobs for that user.
+   *
+   * Returns [{ id, title, salary, equity, companyHandle, companyName, state }, ...]
+   *
+   * Throws NotFoundError if user not found.
+   **/
+
+  static async getAppliedJobs(username) {
+    const userCheck = await db.query(
+      `SELECT username
+           FROM users
+           WHERE username = $1`,
+      [username],
+    );
+    const user = userCheck.rows[0];
+
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const result = await db.query(
+      `SELECT
+          a.job_id AS id,
+          a.state,
+          j.title,
+          j.salary,
+          j.equity,
+          j.company_handle AS "companyHandle",
+          c.name AS "companyName"
+       FROM
+          applications AS a
+       JOIN
+          jobs AS j ON a.job_id = j.id
+       JOIN
+          companies AS c ON j.company_handle = c.handle
+       WHERE
+          a.username = $1`,
+      [username]
+    );
+
+    return result.rows;
+  }
+
+  /** Unapply from a job: delete from db, returns undefined.
+   *
+   * - username: username unapplying from job
+   * - jobId: job id
+   **/
+  static async unapplyFromJob(username, jobId) {
+    const preCheckUser = await db.query(
+      `SELECT username
+           FROM users
+           WHERE username = $1`,
+      [username]
+    );
+    const user = preCheckUser.rows[0];
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const preCheckJob = await db.query(
+      `SELECT id
+           FROM jobs
+           WHERE id = $1`,
+      [jobId]
+    );
+    const job = preCheckJob.rows[0];
+    if (!job) throw new NotFoundError(`No job: ${jobId}`);
+
+    const result = await db.query(
+      `DELETE FROM applications
+           WHERE username = $1 AND job_id = $2
+           RETURNING job_id`,
+      [username, jobId]
+    );
+    const application = result.rows[0];
+
+    if (!application)
+      throw new NotFoundError(`No application found for user ${username} and job ${jobId}`);
+  }
 }
 
 module.exports = User;
